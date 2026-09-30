@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="w_desc_digital_large">Hora, data e próximo alarme</string>
+  <string name="w_desc_analog">Relógio analógico com data</string>
+  <string name="w_desc_digital_small">Horas e minutos empilhados</string>
+  <string name="w_desc_digital_bar">Hora e data numa linha</string>
+  <string name="w_desc_analog_large">Relógio analógico grande</string>
+</resources>

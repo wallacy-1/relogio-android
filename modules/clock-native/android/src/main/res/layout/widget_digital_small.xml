@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/w_root"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@drawable/w_card"
+  android:orientation="vertical"
+  android:paddingStart="22dp"
+  android:paddingEnd="18dp"
+  android:paddingTop="16dp"
+  android:paddingBottom="16dp">
+
+  <TextClock
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:format12Hour="hh"
+    android:format24Hour="HH"
+    android:fontFamily="serif"
+    android:textStyle="bold"
+    android:includeFontPadding="false"
+    android:lineSpacingMultiplier="0.9"
+    android:textColor="@color/w_text"
+    android:textSize="52sp" />
+
+  <TextClock
+    android:layout_width="wrap_content"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    android:format12Hour="mm"
+    android:format24Hour="mm"
+    android:fontFamily="serif"
+    android:textStyle="bold"
+    android:includeFontPadding="false"
+    android:textColor="@color/w_text"
+    android:textSize="52sp" />
+
+  <TextClock
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/w_tag"
+    android:format12Hour="EEE d"
+    android:format24Hour="EEE d"
+    android:fontFamily="sans-serif"
+    android:textStyle="bold"
+    android:paddingStart="10dp"
+    android:paddingEnd="10dp"
+    android:paddingTop="3dp"
+    android:paddingBottom="3dp"
+    android:textAllCaps="true"
+    android:textColor="@color/w_tag_text"
+    android:textSize="11sp" />
+</LinearLayout>

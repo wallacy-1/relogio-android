@@ -1,0 +1,64 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+  <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" android:maxSdkVersion="32" />
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+  <uses-permission android:name="android.permission.VIBRATE" />
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
+  <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+
+  <application>
+    <receiver android:name="expo.modules.clocknative.AlarmReceiver" android:exported="false" android:process=":ring" />
+
+    <receiver android:name="expo.modules.clocknative.BootReceiver" android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+        <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+        <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+        <action android:name="android.intent.action.TIME_SET" />
+        <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+        <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+      </intent-filter>
+    </receiver>
+
+    <service
+      android:name="expo.modules.clocknative.RingService"
+      android:process=":ring"
+      android:exported="false"
+      android:foregroundServiceType="mediaPlayback" />
+
+    <receiver android:name="expo.modules.clocknative.DigitalLargeWidget" android:exported="true" android:label="Relógio digital 4×2">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_digital_large" />
+    </receiver>
+    <receiver android:name="expo.modules.clocknative.AnalogWidget" android:exported="true" android:label="Relógio analógico 2×2">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_analog" />
+    </receiver>
+    <receiver android:name="expo.modules.clocknative.DigitalSmallWidget" android:exported="true" android:label="Relógio digital 2×2">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_digital_small" />
+    </receiver>
+    <receiver android:name="expo.modules.clocknative.DigitalBarWidget" android:exported="true" android:label="Relógio digital 4×1">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_digital_bar" />
+    </receiver>
+    <receiver android:name="expo.modules.clocknative.AnalogLargeWidget" android:exported="true" android:label="Relógio analógico 4×4">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_analog_large" />
+    </receiver>
+  </application>
+</manifest>

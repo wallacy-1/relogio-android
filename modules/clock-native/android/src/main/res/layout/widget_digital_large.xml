@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/w_root"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@drawable/w_card"
+  android:orientation="vertical"
+  android:gravity="center_vertical"
+  android:paddingStart="24dp"
+  android:paddingEnd="24dp"
+  android:paddingTop="16dp"
+  android:paddingBottom="16dp">
+
+  <TextClock
+    android:id="@+id/w_date"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:format12Hour="EEEE, d 'de' MMMM"
+    android:format24Hour="EEEE, d 'de' MMMM"
+    android:fontFamily="sans-serif-medium"
+    android:textColor="@color/w_text_muted"
+    android:textSize="14sp" />
+
+  <TextClock
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:format12Hour="h:mm"
+    android:format24Hour="HH:mm"
+    android:fontFamily="serif"
+    android:textStyle="bold"
+    android:includeFontPadding="false"
+    android:textColor="@color/w_text"
+    android:textSize="68sp" />
+
+  <LinearLayout
+    android:id="@+id/w_alarm_row"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <ImageView
+      android:layout_width="16dp"
+      android:layout_height="16dp"
+      android:src="@drawable/w_ic_alarm" />
+
+    <TextView
+      android:id="@+id/w_next_alarm"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="6dp"
+      android:fontFamily="sans-serif-medium"
+      android:text="Sem alarmes"
+      android:textColor="@color/w_text"
+      android:textSize="13sp" />
+  </LinearLayout>
+</LinearLayout>
