@@ -41,10 +41,10 @@ export const useSettings = create<SettingsState>()(
   ),
 );
 
-/** O serviço nativo precisa da soneca e do som do timer mesmo com o app fechado. */
+/** O nativo precisa da soneca, do som do timer e do formato 12/24 h mesmo com o app fechado. */
 export function syncSettingsToNative() {
   const s = useSettings.getState();
-  ClockNative?.setSettings(JSON.stringify({ snoozeMin: s.snoozeMin, timerSound: s.timerSound, timerVibrate: s.timerVibrate }));
+  ClockNative?.setSettings(JSON.stringify({ snoozeMin: s.snoozeMin, timerSound: s.timerSound, timerVibrate: s.timerVibrate, use24: s.use24 }));
 }
 
 useSettings.subscribe(syncSettingsToNative);

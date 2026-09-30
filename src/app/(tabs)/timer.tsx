@@ -10,6 +10,7 @@ import { Btn, Card, RoundAction, TabHeader, Tag, tap } from '@/components/ui';
 import { fmtDuration, hhmm } from '@/lib/time';
 import { useNow } from '@/lib/useNow';
 import { useHistory } from '@/store/history';
+import { useSettings } from '@/store/settings';
 import { remainingOf, useTimers, type Timer } from '@/store/timers';
 import { alpha, shadow, useTheme } from '@/theme';
 
@@ -180,6 +181,7 @@ const R = 128, C = 2 * Math.PI * R;
 
 function MainTimer({ timer, now }: { timer: Timer; now: number }) {
   const t = useTheme();
+  const use24 = useSettings((s) => s.use24);
   const { pause, resume, cancel, addMinute, restart } = useTimers.getState();
   const rem = remainingOf(timer, now);
   const frac = timer.totalMs ? rem / timer.totalMs : 0;
@@ -209,7 +211,7 @@ function MainTimer({ timer, now }: { timer: Timer; now: number }) {
             {fmtDuration(rem)}
           </Txt>
           <Txt size={14} color={alpha(t.text, 68)}>
-            de {fmtDuration(timer.totalMs)} · termina {hhmm(endAt)}
+            de {fmtDuration(timer.totalMs)} · termina {hhmm(endAt, use24)}
           </Txt>
         </View>
       </View>

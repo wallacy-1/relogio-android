@@ -17,7 +17,6 @@ data class Alarm(
   val vibrate: Boolean,
   val gradual: Boolean,
 ) {
-  val timeText: String get() = "%02d:%02d".format(h, m)
   val repeats: Boolean get() = days.any { it }
 
   fun toJson(): JSONObject = JSONObject().apply {
@@ -63,14 +62,26 @@ data class Settings(
   val snoozeMin: Int = 10,
   val timerSound: String = "Sino",
   val timerVibrate: Boolean = false,
+  val use24: Boolean = true,
 ) {
   companion object {
     fun fromJson(o: JSONObject) = Settings(
       snoozeMin = o.optInt("snoozeMin", 10),
       timerSound = o.optString("timerSound", "Sino"),
       timerVibrate = o.optBoolean("timerVibrate", false),
+      use24 = o.optBoolean("use24", true),
     )
   }
+}
+
+/** "07:30" ou "7:30 PM" conforme o formato escolhido no app (igual ao clockText do JS). */
+fun clockText(h: Int, m: Int, use24: Boolean): String =
+  if (use24) "%02d:%02d".format(h, m)
+  else "%d:%02d %s".format(if (h % 12 == 0) 12 else h % 12, m, if (h < 12) "AM" else "PM")
+
+fun clockText(at: Long, use24: Boolean): String {
+  val c = Calendar.getInstance().apply { timeInMillis = at }
+  return clockText(c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), use24)
 }
 
 /** Timer agendado: dispara em [endAt]. Guardado para sobreviver a reinícios. */

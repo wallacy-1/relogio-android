@@ -75,9 +75,10 @@ export const fmtStopwatchFull = (ms: number) => {
   return f.main + f.cs;
 };
 
-export const hhmm = (ms: number) => {
+/** Horário de um instante, no formato escolhido. */
+export const hhmm = (ms: number, use24: boolean) => {
   const d = new Date(ms);
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return clockText(d.getHours(), d.getMinutes(), use24);
 };
 
 export const uid = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;

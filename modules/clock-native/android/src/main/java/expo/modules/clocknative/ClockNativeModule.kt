@@ -63,7 +63,11 @@ class ClockNativeModule : Module() {
 
     Function("getAlarms") { Store.alarmsJson(ctx) }
 
-    Function("setSettings") { json: String -> Store.saveSettingsJson(ctx, json) }
+    Function("setSettings") { json: String ->
+      val before = Store.settings(ctx).use24
+      Store.saveSettingsJson(ctx, json)
+      if (Store.settings(ctx).use24 != before) Widgets.updateAll(ctx)
+    }
 
     Function("scheduleTimer") { id: String, endAt: Double, label: String ->
       Scheduler.scheduleTimer(ctx, TimerEntry(id, endAt.toLong(), label))

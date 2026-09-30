@@ -24,7 +24,7 @@ class AlarmReceiver : BroadcastReceiver() {
         }
         RingInfo(
           kind = Scheduler.KIND_ALARM, id = alarm.id, label = alarm.label.ifBlank { "Alarme" },
-          time = alarm.timeText, sound = alarm.sound, vibrate = alarm.vibrate, gradual = alarm.gradual,
+          time = clockText(alarm.h, alarm.m, settings.use24), sound = alarm.sound, vibrate = alarm.vibrate, gradual = alarm.gradual,
           snoozeMin = settings.snoozeMin,
         )
       }

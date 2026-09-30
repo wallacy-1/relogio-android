@@ -8,6 +8,7 @@ import { Txt } from '@/components/Txt';
 import { Btn, Seg, StackHeader } from '@/components/ui';
 import { MONTHS, dayWord, fmtDuration, fmtStopwatchFull, hhmm } from '@/lib/time';
 import { useHistory, type HistoryItem } from '@/store/history';
+import { useSettings } from '@/store/settings';
 import { useTimers } from '@/store/timers';
 import { alpha, useTheme } from '@/theme';
 
@@ -19,16 +20,17 @@ function dayTitle(ms: number) {
   return w === 'Hoje' || w === 'Ontem' ? w : `${d.getDate()} de ${MONTHS[d.getMonth()]}`;
 }
 
-function subtitle(h: HistoryItem) {
+function subtitle(h: HistoryItem, use24: boolean) {
   if (h.kind === 'timer') {
-    return h.status === 'done' ? `${h.label} · concluído às ${hhmm(h.at)}` : `${h.label} · cancelado aos ${fmtDuration(h.elapsedMs)}`;
+    return h.status === 'done' ? `${h.label} · concluído às ${hhmm(h.at, use24)}` : `${h.label} · cancelado aos ${fmtDuration(h.elapsedMs)}`;
   }
   const laps = h.laps ? ` · ${h.laps} voltas` : '';
-  return `${h.label}${laps} · ${hhmm(h.startedAt || h.at)}`;
+  return `${h.label}${laps} · ${hhmm(h.startedAt || h.at, use24)}`;
 }
 
 function Row({ h }: { h: HistoryItem }) {
   const t = useTheme();
+  const use24 = useSettings((s) => s.use24);
   const isTimer = h.kind === 'timer';
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, padding: 12, paddingLeft: 14, borderRadius: 24, backgroundColor: t.surface }}>
@@ -49,7 +51,7 @@ function Row({ h }: { h: HistoryItem }) {
           {isTimer ? fmtDuration(h.totalMs) : fmtStopwatchFull(h.elapsedMs)}
         </Txt>
         <Txt size={13} color={alpha(t.text, 70)} numberOfLines={2}>
-          {subtitle(h)}
+          {subtitle(h, use24)}
         </Txt>
       </View>
       {isTimer && (

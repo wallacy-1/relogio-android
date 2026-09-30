@@ -5,9 +5,6 @@ import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 /** Notificações contínuas de timer e cronômetro enquanto rodam. */
 object Ongoing {
@@ -37,7 +34,7 @@ object Ongoing {
     ensureChannel(ctx)
     val code = timerNotifId(id)
     val name = label.ifBlank { "Timer" }
-    val endText = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(endAt))
+    val endText = clockText(endAt, Store.settings(ctx).use24)
     val b = NotificationCompat.Builder(ctx, CHANNEL)
       .setSmallIcon(R.drawable.ic_stat_timer)
       .setColor(0xFFC67139.toInt())

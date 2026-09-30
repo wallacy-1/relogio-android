@@ -6,6 +6,7 @@ import ClockNative from '@/lib/native';
 import { uid } from '@/lib/time';
 
 import { useHistory } from './history';
+import { useSettings } from './settings';
 
 export type Timer = {
   id: string;
@@ -111,3 +112,8 @@ export const useTimers = create<TimersState>()(
     { name: 'timers', storage: createJSONStorage(() => AsyncStorage) },
   ),
 );
+
+// a notificação mostra "Termina às ..." no formato escolhido
+useSettings.subscribe((s, prev) => {
+  if (s.use24 !== prev.use24) useTimers.getState().timers.forEach(notify);
+});
