@@ -1,25 +1,45 @@
 {
   "expo": {
-    "name": "relogio-tmp",
-    "slug": "relogio-tmp",
+    "name": "Relógio",
+    "slug": "relogio",
     "version": "1.0.0",
     "orientation": "portrait",
+    "scheme": "relogio",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "ios": {
-      "supportsTablet": true
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#f5ead8",
+    "splash": {
+      "backgroundColor": "#474238"
     },
+    "platforms": [
+      "android"
+    ],
     "android": {
+      "package": "com.wwallacy.relogio",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#474238",
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#474238",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "dark": {
+            "backgroundColor": "#474238"
+          }
+        }
+      ],
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
     }
   }
 }
