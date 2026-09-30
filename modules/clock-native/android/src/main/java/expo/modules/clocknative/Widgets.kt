@@ -33,14 +33,13 @@ abstract class ClockWidget(
       val pattern = longDatePattern()
       setCharSequence(R.id.w_date, "setFormat12Hour", pattern)
       setCharSequence(R.id.w_date, "setFormat24Hour", pattern)
-      val next = Scheduler.nextAlarm(ctx)
+      val next = Scheduler.nextRing(ctx)
       if (next == null) {
         setViewVisibility(R.id.w_alarm_row, View.GONE)
       } else {
         setViewVisibility(R.id.w_alarm_row, View.VISIBLE)
-        val a = next.second
-        val time = clockText(a.h, a.m, use24)
-        setTextViewText(R.id.w_next_alarm, if (a.label.isBlank()) time else "$time · ${a.label}")
+        val parts = listOfNotNull(clockText(next.at, use24), "Soneca".takeIf { next.snooze }, next.alarm.label.ifBlank { null })
+        setTextViewText(R.id.w_next_alarm, parts.joinToString(" · "))
       }
     }
   }

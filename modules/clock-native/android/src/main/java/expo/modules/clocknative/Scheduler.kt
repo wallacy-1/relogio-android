@@ -71,9 +71,36 @@ object Scheduler {
     setExact(ctx, at, firePending(ctx, KIND_ALARM, alarm.id, PendingIntent.FLAG_UPDATE_CURRENT)!!)
   }
 
-  fun scheduleSnooze(ctx: Context, alarmId: String, minutes: Int) {
-    val at = System.currentTimeMillis() + minutes * 60_000L
+  fun scheduleSnooze(ctx: Context, alarmId: String, minutes: Int) =
+    snoozeAt(ctx, alarmId, System.currentTimeMillis() + minutes * 60_000L)
+
+  private fun snoozeAt(ctx: Context, alarmId: String, at: Long) {
+    val alarm = Store.alarms(ctx).find { it.id == alarmId } ?: run {
+      Store.removeSnooze(ctx, alarmId)
+      return
+    }
+    Store.putSnooze(ctx, alarmId, at)
     setExact(ctx, at, firePending(ctx, KIND_SNOOZE, alarmId, PendingIntent.FLAG_UPDATE_CURRENT)!!)
+    Ongoing.showSnooze(ctx, alarmId, alarm.label, at)
+    snoozeChanged(ctx)
+  }
+
+  fun cancelSnooze(ctx: Context, alarmId: String) {
+    cancel(ctx, KIND_SNOOZE, alarmId)
+    snoozeDone(ctx, alarmId)
+  }
+
+  /** Soneca que tocou ou foi cancelada: some da lista e da notificação. */
+  fun snoozeDone(ctx: Context, alarmId: String) {
+    Store.removeSnooze(ctx, alarmId)
+    Ongoing.cancelSnooze(ctx, alarmId)
+    snoozeChanged(ctx)
+  }
+
+  /** Atualiza widgets e avisa o app (se estiver aberto) para reler as sonecas. */
+  private fun snoozeChanged(ctx: Context) {
+    Widgets.updateAll(ctx)
+    ctx.sendBroadcast(Intent(RingService.ACTION_RING_CHANGED).setPackage(ctx.packageName).putExtra("event", "onSnoozeChange"))
   }
 
   fun scheduleTimer(ctx: Context, t: TimerEntry) {
@@ -95,12 +122,17 @@ object Scheduler {
       // timer que venceu com o aparelho desligado dispara logo em seguida
       scheduleTimer(ctx, if (it.endAt < now) it.copy(endAt = now + 2_000) else it)
     }
+    Store.snoozes(ctx).forEach { (id, at) -> snoozeAt(ctx, id, maxOf(at, now + 2_000)) }
     Widgets.updateAll(ctx)
   }
 
-  /** Próximo alarme ligado deste app: (horário, alarme). */
-  fun nextAlarm(ctx: Context): Pair<Long, Alarm>? =
-    Store.alarms(ctx).filter { it.on }
-      .mapNotNull { a -> a.nextOccurrence()?.let { it to a } }
-      .minByOrNull { it.first }
+  data class NextRing(val at: Long, val alarm: Alarm, val snooze: Boolean)
+
+  /** Próximo toque de alarme deste app, contando sonecas pendentes. */
+  fun nextRing(ctx: Context): NextRing? {
+    val alarms = Store.alarms(ctx)
+    val regular = alarms.filter { it.on }.mapNotNull { a -> a.nextOccurrence()?.let { NextRing(it, a, false) } }
+    val snoozes = Store.snoozes(ctx).mapNotNull { (id, at) -> alarms.find { it.id == id }?.let { NextRing(at, it, true) } }
+    return (regular + snoozes).minByOrNull { it.at }
+  }
 }

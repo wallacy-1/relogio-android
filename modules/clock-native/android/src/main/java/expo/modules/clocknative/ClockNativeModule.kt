@@ -30,14 +30,14 @@ class ClockNativeModule : Module() {
   override fun definition() = ModuleDefinition {
     Name("ClockNative")
 
-    Events("onRingStart", "onRingStop")
+    Events("onRingStart", "onRingStop", "onSnoozeChange")
 
     OnCreate {
       val receiver = object : BroadcastReceiver() {
         override fun onReceive(c: Context, intent: Intent) {
           val event = intent.getStringExtra("event") ?: return
-          val info = RingInfo.fromJson(JSONObject(intent.getStringExtra("info") ?: return))
-          sendEvent(event, info.toMap())
+          val info = intent.getStringExtra("info")?.let { RingInfo.fromJson(JSONObject(it)).toMap() }
+          sendEvent(event, info ?: emptyMap<String, Any>())
         }
       }
       ContextCompat.registerReceiver(ctx, receiver, IntentFilter(RingService.ACTION_RING_CHANGED), ContextCompat.RECEIVER_NOT_EXPORTED)
@@ -54,8 +54,13 @@ class ClockNativeModule : Module() {
     Function("setAlarms") { json: String ->
       val incoming = JSONArray(json).let { arr -> (0 until arr.length()).map { Alarm.fromJson(arr.getJSONObject(it)) } }
       val ids = incoming.map { it.id }.toSet()
+      val previous = Store.alarms(ctx)
       // cancela os agendamentos de alarmes que foram excluídos
-      Store.alarms(ctx).filter { it.id !in ids }.forEach { Scheduler.scheduleAlarm(ctx, it.copy(on = false)) }
+      previous.filter { it.id !in ids }.forEach { Scheduler.scheduleAlarm(ctx, it.copy(on = false)) }
+      // soneca cai junto se o alarme foi excluído ou desligado agora (alarme de uma vez já chega desligado)
+      val snoozes = Store.snoozes(ctx).keys
+      previous.filter { old -> old.id in snoozes && (old.id !in ids || (old.on && incoming.any { it.id == old.id && !it.on })) }
+        .forEach { Scheduler.cancelSnooze(ctx, it.id) }
       Store.saveAlarms(ctx, incoming)
       incoming.forEach { Scheduler.scheduleAlarm(ctx, it) }
       Widgets.updateAll(ctx)
@@ -66,7 +71,11 @@ class ClockNativeModule : Module() {
     Function("setSettings") { json: String ->
       val before = Store.settings(ctx).use24
       Store.saveSettingsJson(ctx, json)
-      if (Store.settings(ctx).use24 != before) Widgets.updateAll(ctx)
+      if (Store.settings(ctx).use24 != before) {
+        Widgets.updateAll(ctx)
+        val alarms = Store.alarms(ctx)
+        Store.snoozes(ctx).forEach { (id, at) -> Ongoing.showSnooze(ctx, id, alarms.find { it.id == id }?.label ?: "", at) }
+      }
     }
 
     Function("scheduleTimer") { id: String, endAt: Double, label: String ->
@@ -88,6 +97,10 @@ class ClockNativeModule : Module() {
     }
 
     Function("cancelStopwatchNotification") { Ongoing.cancelStopwatch(ctx) }
+
+    Function("getSnoozes") { Store.snoozesJson(ctx) }
+
+    Function("cancelSnooze") { id: String -> Scheduler.cancelSnooze(ctx, id) }
 
     Function("getRinging") { RingService.currentRing(ctx)?.toMap() }
 

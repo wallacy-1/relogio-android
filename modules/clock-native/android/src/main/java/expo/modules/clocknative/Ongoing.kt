@@ -2,11 +2,14 @@ package expo.modules.clocknative
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 
-/** Notificações contínuas de timer e cronômetro enquanto rodam. */
+/** Notificações contínuas de timer, cronômetro e soneca enquanto rodam. */
 object Ongoing {
   private const val CHANNEL = "ongoing"
   private const val STOPWATCH_ID = 4300
@@ -22,6 +25,7 @@ object Ongoing {
   }
 
   private fun timerNotifId(id: String) = 4400 + (id.hashCode() and 0xFFF)
+  private fun snoozeNotifId(id: String) = 8600 + (id.hashCode() and 0xFFF)
 
   private fun fmt(ms: Long): String {
     val s = (ms / 1000).coerceAtLeast(0)
@@ -64,6 +68,38 @@ object Ongoing {
 
   fun cancelTimer(ctx: Context, id: String) {
     NotificationManagerCompat.from(ctx).cancel(timerNotifId(id))
+  }
+
+  fun showSnooze(ctx: Context, alarmId: String, label: String, at: Long) {
+    if (!NotificationManagerCompat.from(ctx).areNotificationsEnabled()) return
+    ensureChannel(ctx)
+    val code = snoozeNotifId(alarmId)
+    val cancel = PendingIntent.getBroadcast(
+      ctx, code,
+      Intent(ctx, SnoozeCancelReceiver::class.java)
+        .setData(Uri.parse("clock://snooze-cancel/$alarmId"))
+        .putExtra(Scheduler.EXTRA_ID, alarmId),
+      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+    )
+    val b = NotificationCompat.Builder(ctx, CHANNEL)
+      .setSmallIcon(R.drawable.ic_stat_clock)
+      .setColor(0xFFC67139.toInt())
+      .setOngoing(true)
+      .setOnlyAlertOnce(true)
+      .setSilent(true)
+      .setContentTitle("Soneca · ${label.ifBlank { "Alarme" }}")
+      .setContentText("Toca às ${clockText(at, Store.settings(ctx).use24)}")
+      .setUsesChronometer(true)
+      .setChronometerCountDown(true)
+      .setShowWhen(true)
+      .setWhen(at)
+      .setContentIntent(Scheduler.launchPending(ctx, "", code))
+      .addAction(0, "Cancelar soneca", cancel)
+    NotificationManagerCompat.from(ctx).notify(code, b.build())
+  }
+
+  fun cancelSnooze(ctx: Context, alarmId: String) {
+    NotificationManagerCompat.from(ctx).cancel(snoozeNotifId(alarmId))
   }
 
   fun showStopwatch(ctx: Context, elapsedMs: Long, running: Boolean, laps: Int) {

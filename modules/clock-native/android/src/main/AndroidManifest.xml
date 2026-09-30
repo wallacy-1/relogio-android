@@ -13,6 +13,8 @@
   <application>
     <receiver android:name="expo.modules.clocknative.AlarmReceiver" android:exported="false" android:process=":ring" />
 
+    <receiver android:name="expo.modules.clocknative.SnoozeCancelReceiver" android:exported="false" />
+
     <receiver android:name="expo.modules.clocknative.BootReceiver" android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.BOOT_COMPLETED" />

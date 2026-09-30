@@ -21,6 +21,8 @@ class AlarmReceiver : BroadcastReceiver() {
           } else {
             Store.saveAlarms(ctx, alarms.map { if (it.id == id) it.copy(on = false) else it })
           }
+        } else {
+          Scheduler.snoozeDone(ctx, id)
         }
         RingInfo(
           kind = Scheduler.KIND_ALARM, id = alarm.id, label = alarm.label.ifBlank { "Alarme" },
@@ -42,6 +44,13 @@ class AlarmReceiver : BroadcastReceiver() {
 
     Widgets.updateAll(ctx)
     ContextCompat.startForegroundService(ctx, RingService.startIntent(ctx, ring))
+  }
+}
+
+/** Ação "Cancelar soneca" da notificação; funciona sem o app aberto. */
+class SnoozeCancelReceiver : BroadcastReceiver() {
+  override fun onReceive(ctx: Context, intent: Intent) {
+    Scheduler.cancelSnooze(ctx, intent.getStringExtra(Scheduler.EXTRA_ID) ?: return)
   }
 }
 

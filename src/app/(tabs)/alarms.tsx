@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import { Card, TabHeader, Toggle, tap } from '@/components/ui';
-import { LETTERS, clockText, inText, nextOccurrence, repText } from '@/lib/time';
+import { LETTERS, clockText, hhmm, inText, nextOccurrence, repText } from '@/lib/time';
 import { useNow } from '@/lib/useNow';
 import { useAlarms, type Alarm } from '@/store/alarms';
 import { useSettings } from '@/store/settings';
@@ -15,6 +15,7 @@ function AlarmCard({ a, now }: { a: Alarm; now: Date }) {
   const t = useTheme();
   const use24 = useSettings((s) => s.use24);
   const toggle = useAlarms((s) => s.toggle);
+  const snoozeAt = useAlarms((s) => s.snoozes[a.id]);
   const nx = a.on ? nextOccurrence(a.h, a.m, a.days, now) : null;
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={`Editar alarme ${clockText(a.h, a.m, use24)} ${a.label}`} onPress={() => router.push(`/alarm/${a.id}`)}>
@@ -46,7 +47,7 @@ function AlarmCard({ a, now }: { a: Alarm; now: Date }) {
               ))}
             </View>
             <Txt font="semibold" size={12} color={alpha(t.text, 68)}>
-              {nx ? inText(nx.getTime() - now.getTime()) : 'Desativado'}
+              {snoozeAt ? `Soneca até ${hhmm(snoozeAt, use24)}` : nx ? inText(nx.getTime() - now.getTime()) : 'Desativado'}
             </Txt>
           </View>
         </Card>

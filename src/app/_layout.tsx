@@ -41,11 +41,13 @@ function useNativeSync() {
 
     const appSub = AppState.addEventListener('change', (s) => s === 'active' && refresh());
     const ringSub = ClockNative?.addListener('onRingStart', goRinging);
+    const snoozeSub = ClockNative?.addListener('onSnoozeChange', () => useAlarms.getState().loadSnoozes());
     const sweep = setInterval(() => useTimers.getState().sweep(), 1000);
     return () => {
       clearTimeout(first);
       appSub.remove();
       ringSub?.remove();
+      snoozeSub?.remove();
       clearInterval(sweep);
     };
   }, []);

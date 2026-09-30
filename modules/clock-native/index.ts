@@ -26,6 +26,7 @@ export type Permissions = { notifications: boolean; exactAlarms: boolean; fullSc
 type Events = {
   onRingStart: (info: RingInfo) => void;
   onRingStop: (info: RingInfo) => void;
+  onSnoozeChange: () => void;
 };
 
 declare class ClockNativeModule extends NativeModule<Events> {
@@ -39,6 +40,9 @@ declare class ClockNativeModule extends NativeModule<Events> {
   cancelTimerNotification(id: string): void;
   showStopwatchNotification(elapsedMs: number, running: boolean, laps: number): void;
   cancelStopwatchNotification(): void;
+  /** JSON: id do alarme -> instante (ms) da soneca pendente. */
+  getSnoozes(): string;
+  cancelSnooze(id: string): void;
   getRinging(): RingInfo | null;
   stopRinging(): void;
   snoozeRinging(): void;

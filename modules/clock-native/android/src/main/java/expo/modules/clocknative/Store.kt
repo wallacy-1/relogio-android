@@ -148,6 +148,24 @@ object Store {
 
   fun timersJson(ctx: Context): String = read(ctx, "timers", "{}")
 
+  /** Sonecas pendentes: id do alarme -> instante em que toca de novo. */
+  fun snoozes(ctx: Context): Map<String, Long> {
+    val o = JSONObject(snoozesJson(ctx))
+    return o.keys().asSequence().associateWith { o.getLong(it) }
+  }
+
+  fun putSnooze(ctx: Context, alarmId: String, at: Long) = synchronized(lock) {
+    write(ctx, "snoozes", JSONObject(snoozesJson(ctx)).put(alarmId, at).toString())
+  }
+
+  fun removeSnooze(ctx: Context, alarmId: String) = synchronized(lock) {
+    val o = JSONObject(snoozesJson(ctx))
+    o.remove(alarmId)
+    write(ctx, "snoozes", o.toString())
+  }
+
+  fun snoozesJson(ctx: Context): String = read(ctx, "snoozes", "{}")
+
   /** Toque em andamento, visível para o processo do app. */
   fun ringing(ctx: Context): RingInfo? = read(ctx, "ringing", "").takeIf { it.isNotBlank() }?.let {
     RingInfo.fromJson(JSONObject(it))

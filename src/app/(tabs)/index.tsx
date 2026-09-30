@@ -7,7 +7,7 @@ import { AnalogClock } from '@/components/AnalogClock';
 import { Icon } from '@/components/Icon';
 import { Txt } from '@/components/Txt';
 import { Blob, Btn, Card, TabHeader, Tag } from '@/components/ui';
-import { clockText, dateLong, dayWord, inText, nextOccurrence, pad } from '@/lib/time';
+import { clockText, dateLong, dayWord, hhmm, inText, nextOccurrence, pad } from '@/lib/time';
 import { useNow } from '@/lib/useNow';
 import { useAlarms } from '@/store/alarms';
 import { useSettings } from '@/store/settings';
@@ -21,18 +21,25 @@ export default function ClockScreen() {
   const now = useNow(1000);
   const use24 = useSettings((s) => s.use24);
   const alarms = useAlarms((s) => s.alarms);
+  const snoozes = useAlarms((s) => s.snoozes);
 
   const H = now.getHours(), M = now.getMinutes();
   const minuteKey = Math.floor(now.getTime() / 60000);
 
+  // soneca pendente conta como próximo toque (pode tocar antes dos alarmes normais)
   const next = useMemo(() => {
     const at = new Date(minuteKey * 60000);
-    return alarms
+    type Next = { a: (typeof alarms)[number]; when: Date; snooze: boolean };
+    const regular = alarms
       .filter((a) => a.on)
-      .map((a) => ({ a, when: nextOccurrence(a.h, a.m, a.days, at) }))
-      .filter((x): x is { a: (typeof alarms)[number]; when: Date } => !!x.when)
-      .sort((x, y) => x.when.getTime() - y.when.getTime())[0];
-  }, [alarms, minuteKey]);
+      .map((a) => ({ a, when: nextOccurrence(a.h, a.m, a.days, at), snooze: false }))
+      .filter((x): x is Next => !!x.when);
+    const snoozed = Object.entries(snoozes).flatMap(([id, ms]): Next[] => {
+      const a = alarms.find((x) => x.id === id);
+      return a ? [{ a, when: new Date(ms), snooze: true }] : [];
+    });
+    return [...regular, ...snoozed].sort((x, y) => x.when.getTime() - y.when.getTime())[0];
+  }, [alarms, snoozes, minuteKey]);
 
   return (
     <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: t.bg }}>
@@ -67,13 +74,24 @@ export default function ClockScreen() {
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Txt kicker color={t.dark ? t.accent : t.accentText}>
-                Próximo alarme
+                {next?.snooze ? 'Soneca' : 'Próximo alarme'}
               </Txt>
               <Txt font="bold" size={16} numberOfLines={1}>
-                {next ? `${dayWord(next.when, now)}, ${clockText(next.a.h, next.a.m, use24)}${next.a.label ? ` · ${next.a.label}` : ''}` : 'Nenhum alarme ativo'}
+                {next ? `${dayWord(next.when, now)}, ${hhmm(next.when.getTime(), use24)}${next.a.label ? ` · ${next.a.label}` : ''}` : 'Nenhum alarme ativo'}
               </Txt>
             </View>
             {next ? <Tag label={inText(next.when.getTime() - now.getTime())} /> : <Icon name="plus" size={20} />}
+            {next?.snooze && (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Cancelar soneca"
+                hitSlop={8}
+                onPress={() => useAlarms.getState().cancelSnooze(next.a.id)}
+                style={{ width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', backgroundColor: alpha(t.text, 10) }}
+              >
+                <Icon name="close" size={16} />
+              </Pressable>
+            )}
           </Card>
         </Pressable>
 

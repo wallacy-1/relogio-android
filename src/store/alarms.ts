@@ -23,9 +23,13 @@ const byTime = (a: Alarm, b: Alarm) => a.h * 60 + a.m - (b.h * 60 + b.m);
 
 type AlarmsState = {
   alarms: Alarm[];
+  /** Sonecas pendentes: id do alarme -> instante em que toca de novo. Só existem no nativo. */
+  snoozes: Record<string, number>;
   loaded: boolean;
   /** Relê do nativo: alarmes de uma vez são desligados lá depois de tocar. */
   load: () => Promise<void>;
+  loadSnoozes: () => void;
+  cancelSnooze: (id: string) => void;
   upsert: (a: Alarm) => void;
   toggle: (id: string, on: boolean) => void;
   remove: (id: string) => void;
@@ -52,8 +56,15 @@ export const useAlarms = create<AlarmsState>()((set, get) => {
   };
   return {
     alarms: [],
+    snoozes: {},
     loaded: false,
-    load: async () => set({ alarms: (await read()).sort(byTime), loaded: true }),
+    load: async () => {
+      set({ alarms: (await read()).sort(byTime), loaded: true });
+      get().loadSnoozes();
+    },
+    loadSnoozes: () => set({ snoozes: ClockNative ? JSON.parse(ClockNative.getSnoozes()) : {} }),
+    // o nativo avisa com onSnoozeChange e a lista é relida
+    cancelSnooze: (id) => ClockNative?.cancelSnooze(id),
     upsert: (a) => {
       const list = get().alarms;
       commit(list.some((x) => x.id === a.id) ? list.map((x) => (x.id === a.id ? a : x)) : [...list, a]);
