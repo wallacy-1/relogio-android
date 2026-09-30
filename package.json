@@ -30,6 +30,7 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "build:apk": "cd android && gradlew assembleRelease -PreactNativeArchitectures=armeabi-v7a,arm64-v8a",
     "start": "expo start --dev-client",
     "android": "expo run:android",
     "prebuild": "expo prebuild --platform android --clean",
