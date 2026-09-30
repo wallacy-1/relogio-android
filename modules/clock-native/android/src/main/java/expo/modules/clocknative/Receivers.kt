@@ -56,6 +56,10 @@ class SnoozeCancelReceiver : BroadcastReceiver() {
 
 class BootReceiver : BroadcastReceiver() {
   override fun onReceive(ctx: Context, intent: Intent) {
+    // o aparelho reiniciou no meio de um toque: o serviço morreu, o registro não pode abrir a tela de toque
+    if (intent.action == Intent.ACTION_BOOT_COMPLETED || intent.action == Intent.ACTION_LOCKED_BOOT_COMPLETED) {
+      Store.setRinging(ctx, null)
+    }
     Scheduler.rescheduleAll(ctx)
   }
 }

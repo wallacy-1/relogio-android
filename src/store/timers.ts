@@ -98,14 +98,24 @@ export const useTimers = create<TimersState>()(
         reconcile: () => {
           if (!ClockNative) return;
           const native = JSON.parse(ClockNative.getTimers()) as Record<string, { endAt: number; label: string }>;
-          const known = new Set(get().timers.map((t) => t.id));
           const now = Date.now();
+          // timer que o JS ainda tem, mas o nativo empurrou para depois ("+1 min" com o app em segundo plano);
+          // sem isso o sweep o daria por concluído e ele tocaria de novo fora da lista
+          const pushed: Timer[] = [];
+          const timers = get().timers.map((t) => {
+            const v = native[t.id];
+            if (!t.running || !v || v.endAt <= t.endAt || v.endAt <= now) return t;
+            const moved = { ...t, totalMs: t.totalMs + 60000, endAt: v.endAt };
+            pushed.push(moved);
+            return moved;
+          });
+          const known = new Set(timers.map((t) => t.id));
           const extra: Timer[] = Object.entries(native)
             .filter(([id, v]) => !known.has(id) && v.endAt > now)
             .map(([id, v]) => ({ id, label: v.label, totalMs: v.endAt - now, running: true, endAt: v.endAt, remainingMs: v.endAt - now }));
-          if (!extra.length) return;
-          set({ timers: [...extra, ...get().timers] });
-          extra.forEach(notify);
+          if (!extra.length && !pushed.length) return;
+          set({ timers: [...extra, ...timers] });
+          [...extra, ...pushed].forEach(notify);
         },
       };
     },

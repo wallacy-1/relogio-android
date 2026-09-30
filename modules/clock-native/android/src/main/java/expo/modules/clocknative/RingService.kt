@@ -152,7 +152,10 @@ class RingService : Service() {
       ACTION_ADD_MINUTE -> {
         current?.let {
           if (it.kind == Scheduler.KIND_TIMER) {
-            Scheduler.scheduleTimer(this, TimerEntry(it.id, System.currentTimeMillis() + 60_000, it.label))
+            val endAt = System.currentTimeMillis() + 60_000
+            Scheduler.scheduleTimer(this, TimerEntry(it.id, endAt, it.label))
+            // troca a notificação "estourada" do timer; o app reajusta a lista ao voltar
+            Ongoing.showTimer(this, it.id, it.label, endAt, 60_000, 60_000, false)
           }
         }
         finish()
@@ -277,7 +280,8 @@ class RingService : Service() {
 
   private fun finish() {
     releaseMedia()
-    val info = current
+    // sem toque neste processo, pode haver um registro velho (ex.: processo morto): a tela do app sai mesmo assim
+    val info = current ?: Store.ringing(this)
     current = null
     ServiceCompat.stopForeground(this, ServiceCompat.STOP_FOREGROUND_REMOVE)
     stopSelf()
